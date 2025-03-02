@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.css' rel='stylesheet' />
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.js'></script>
+    <style>
+        #calendar {
+            max-width: 1500px;
+            margin: 40px auto;
+        }
+        .inputs {
+            max-width: 900px;
+            margin: 20px auto;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .inputs input, .inputs button {
+            padding: 10px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="inputs">
+        <input type="date" id="startDate" placeholder="Fecha de inicio">
+        <input type="date" id="endDate" placeholder="Fecha de fin">
+        <input type="number" id="totalHours" placeholder="Horas totales" min="4">
+        <button onclick="autocompleteEvents()">Autocompletar</button>
+    </div>
+    <div id="calendar"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const calendarEl = document.getElementById('calendar');
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'timeGridWeek',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                slotMinTime: '07:00:00', // Hora mínima visible
+                slotMaxTime: '22:00:00', // Hora máxima visible (10 PM)
+                events: [], // Eventos se agregarán dinámicamente
+                editable: true, // Permite arrastrar y soltar eventos
+                selectable: true, // Permite seleccionar rangos de tiempo
+                select: function (info) {
+                    const start = info.start;
+                    const end = info.end;
+                    const duration = (end - start) / (1000 * 60 * 60); // Duración en horas
+
+                    // Validación: Mínimo 4 horas
+                    if (duration < 4) {
+                        alert('Un evento debe tener al menos 4 horas.');
+                        return;
+                    }
+
+                    const title = prompt('Ingrese el nombre del evento:');
+                    if (title) {
+                        calendar.addEvent({
+                            title: title,
+                            start: start,
+                            end: end,
+                            allDay: false
+                        });
+                    }
+                    calendar.unselect(); // Limpiar la selección
+                }
+            });
+
+            calendar.render();
+            window.calendar = calendar; // Hacer el calendario accesible globalmente
+        });
+
+        // Función para agregar eventos recurrentes
+        function addRecurringEvent(title, startTime, endTime, daysOfWeek, startDate, endDate) {
+            const events = [];
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+
+            while (start <= end) {
+                if (daysOfWeek.includes(start.getDay())) {
+                    const eventStart = new Date(start);
+                    eventStart.setHours(startTime.split(':')[0], startTime.split(':')[1], 0);
+
+                    const eventEnd = new Date(start);
+                    eventEnd.setHours(endTime.split(':')[0], endTime.split(':')[1], 0);
+
+                    events.push({
+                        title: title,
+                        start: eventStart.toISOString(),
+                        end: eventEnd.toISOString(),
+                        allDay: false
+                    });
+                }
+                start.setDate(start.getDate() + 1); // Avanzar un día
+            }
+
+            // Agregar eventos al calendario
+            window.calendar.addEventSource(events);
+        }
+
+        // Función para autocompletar eventos
+        function autocompleteEvents() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const totalHours = parseInt(document.getElementById('totalHours').value);
+
+            if (!startDate || !endDate || isNaN(totalHours) || totalHours < 4) {
+                alert('Por favor, complete todos los campos correctamente.');
+                return;
+            }
+
+            const events = window.calendar.getEvents();
+            let totalScheduledHours = 0;
+
+            // Calcular horas ya programadas
+            events.forEach(event => {
+                const duration = (event.end - event.start) / (1000 * 60 * 60); // Duración en horas
+                totalScheduledHours += duration;
+            });
+
+            // Horas restantes
+            let remainingHours = totalHours - totalScheduledHours;
+
+            if (remainingHours <= 0) {
+                alert('Las horas ya programadas cubren o superan las horas requeridas.');
+                return;
+            }
+
+            // Autocompletar eventos
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+
+            while (start <= end && remainingHours > 0) {
+                const dayOfWeek = start.getDay();
+                const eventStart = new Date(start);
+                eventStart.setHours(7, 0, 0); // Hora de inicio: 7 AM
+
+                const eventEnd = new Date(start);
+                eventEnd.setHours(11, 0, 0); // Hora de fin: 11 AM (4 horas)
+
+                // Verificar si ya existe un evento en este día
+                const existingEvent = events.find(event => 
+                    event.start.getDate() === start.getDate() &&
+                    event.start.getMonth() === start.getMonth()
+                );
+
+                if (!existingEvent) {
+                    window.calendar.addEvent({
+                        title: 'Evento autocompletado',
+                        start: eventStart,
+                        end: eventEnd,
+                        allDay: false
+                    });
+                    remainingHours -= 4; // Restar 4 horas
+                }
+
+                start.setDate(start.getDate() + 1); // Avanzar un día
+            }
+
+            // Notificar horas libres
+            if (remainingHours > 0) {
+                alert(`Quedan ${remainingHours} horas libres. Agrega más eventos manualmente.`);
+            }
+        }
+    </script>
+</body>
+</html>
