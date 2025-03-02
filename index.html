@@ -3,6 +3,7 @@
 <head>
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.css' rel='stylesheet' />
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/locales/es.js'></script> <!-- Idioma español -->
     <style>
         #calendar {
             max-width: 1500px;
@@ -45,6 +46,7 @@
                 events: [], // Eventos se agregarán dinámicamente
                 editable: true, // Permite arrastrar y soltar eventos
                 selectable: true, // Permite seleccionar rangos de tiempo
+                locale: 'es', // Idioma español
                 select: function (info) {
                     const start = info.start;
                     const end = info.end;
@@ -53,6 +55,12 @@
                     // Validación: Mínimo 4 horas
                     if (duration < 4) {
                         alert('Un evento debe tener al menos 4 horas.');
+                        return;
+                    }
+
+                    // Validación: No permitir eventos los domingos (día 0)
+                    if (start.getDay() === 0) {
+                        alert('No se pueden crear eventos los domingos.');
                         return;
                     }
 
@@ -66,6 +74,11 @@
                         });
                     }
                     calendar.unselect(); // Limpiar la selección
+                },
+                dayHeaderContent: function (arg) {
+                    // Cambiar el nombre de los días de la semana a español
+                    const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+                    return days[arg.date.getDay()];
                 }
             });
 
@@ -135,26 +148,30 @@
 
             while (start <= end && remainingHours > 0) {
                 const dayOfWeek = start.getDay();
-                const eventStart = new Date(start);
-                eventStart.setHours(7, 0, 0); // Hora de inicio: 7 AM
 
-                const eventEnd = new Date(start);
-                eventEnd.setHours(11, 0, 0); // Hora de fin: 11 AM (4 horas)
+                // No crear eventos los domingos (día 0)
+                if (dayOfWeek !== 0) {
+                    const eventStart = new Date(start);
+                    eventStart.setHours(7, 0, 0); // Hora de inicio: 7 AM
 
-                // Verificar si ya existe un evento en este día
-                const existingEvent = events.find(event => 
-                    event.start.getDate() === start.getDate() &&
-                    event.start.getMonth() === start.getMonth()
-                );
+                    const eventEnd = new Date(start);
+                    eventEnd.setHours(11, 0, 0); // Hora de fin: 11 AM (4 horas)
 
-                if (!existingEvent) {
-                    window.calendar.addEvent({
-                        title: 'Evento autocompletado',
-                        start: eventStart,
-                        end: eventEnd,
-                        allDay: false
-                    });
-                    remainingHours -= 4; // Restar 4 horas
+                    // Verificar si ya existe un evento en este día
+                    const existingEvent = events.find(event => 
+                        event.start.getDate() === start.getDate() &&
+                        event.start.getMonth() === start.getMonth()
+                    );
+
+                    if (!existingEvent) {
+                        window.calendar.addEvent({
+                            title: 'Evento autocompletado',
+                            start: eventStart,
+                            end: eventEnd,
+                            allDay: false
+                        });
+                        remainingHours -= 4; // Restar 4 horas
+                    }
                 }
 
                 start.setDate(start.getDate() + 1); // Avanzar un día
