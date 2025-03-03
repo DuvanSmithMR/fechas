@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.css' rel='stylesheet' />
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.js'></script>
@@ -9,6 +10,7 @@
             max-width: 1500px;
             margin: 40px auto;
         }
+
         .inputs {
             max-width: 900px;
             margin: 20px auto;
@@ -16,12 +18,15 @@
             gap: 10px;
             flex-wrap: wrap;
         }
-        .inputs input, .inputs button {
+
+        .inputs input,
+        .inputs button {
             padding: 10px;
             font-size: 16px;
         }
     </style>
 </head>
+
 <body>
     <div class="inputs">
         <input type="date" id="startDate" placeholder="Fecha de inicio">
@@ -54,6 +59,7 @@
                 editable: true, // Permite arrastrar y soltar eventos
                 selectable: true, // Permite seleccionar rangos de tiempo
                 locale: 'es', // Idioma español
+                timeZone: 'local', // Usa la zona horaria local
                 select: function (info) {
                     const start = info.start;
                     const end = info.end;
@@ -88,7 +94,7 @@
                         calendar.addEvent({
                             title: title,
                             start: start,
-                            end: end
+                            end: end,
                         });
                     }
                     calendar.unselect(); // Limpiar la selección
@@ -132,9 +138,8 @@
                     }
                 },
                 dayHeaderContent: function (arg) {
-                    // Cambiar el nombre de los días de la semana a español
                     const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-                    return days[arg.date.getDay()];
+                    return { html: `<span>${days[arg.date.getUTCDay()]}</span>` };
                 }
             });
 
@@ -159,7 +164,7 @@
                     events.push({
                         title: title,
                         start: eventStart.toISOString(),
-                        end: eventEnd.toISOString()
+                        end: eventEnd.toISOString(),
                     });
                 }
                 start.setDate(start.getDate() + 1); // Avanzar un día
@@ -213,7 +218,7 @@
                     eventEnd.setHours(11, 0, 0); // Hora de fin: 11 AM (4 horas)
 
                     // Verificar si ya existe un evento en este día
-                    const existingEvent = events.find(event => 
+                    const existingEvent = events.find(event =>
                         event.start.getDate() === start.getDate() &&
                         event.start.getMonth() === start.getMonth()
                     );
@@ -222,7 +227,7 @@
                         window.calendar.addEvent({
                             title: 'Evento autocompletado',
                             start: eventStart,
-                            end: eventEnd
+                            end: eventEnd,
                         });
                         remainingHours -= MIN_HORAS; // Restar 4 horas
                     }
@@ -238,4 +243,5 @@
         }
     </script>
 </body>
+
 </html>
