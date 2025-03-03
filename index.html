@@ -41,6 +41,7 @@
             const calendarEl = document.getElementById('calendar');
             const calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'timeGridWeek',
+                hiddenDays: [0], // Ocultar los domingos
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
