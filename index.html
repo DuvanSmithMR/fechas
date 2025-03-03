@@ -32,6 +32,9 @@
     <div id="calendar"></div>
 
     <script>
+        // Constante global para el mínimo de horas
+        const MIN_HORAS = 4;
+
         document.addEventListener('DOMContentLoaded', function () {
             const calendarEl = document.getElementById('calendar');
             const calendar = new FullCalendar.Calendar(calendarEl, {
@@ -53,8 +56,8 @@
                     const duration = (end - start) / (1000 * 60 * 60); // Duración en horas
 
                     // Validación: Mínimo 4 horas
-                    if (duration < 4) {
-                        alert('Un evento debe tener al menos 4 horas.');
+                    if (duration < MIN_HORAS) {
+                        alert(`Un evento debe tener al menos ${MIN_HORAS} horas.`);
                         return;
                     }
 
@@ -74,6 +77,16 @@
                         });
                     }
                     calendar.unselect(); // Limpiar la selección
+                },
+                eventChange: function (info) {
+                    const event = info.event;
+                    const duration = (event.end - event.start) / (1000 * 60 * 60); // Duración en horas
+
+                    // Validación: No permitir que un evento tenga menos de 4 horas
+                    if (duration < MIN_HORAS) {
+                        alert(`No se puede editar el evento para que tenga menos de ${MIN_HORAS} horas.`);
+                        info.revert(); // Revertir cambios
+                    }
                 },
                 dayHeaderContent: function (arg) {
                     // Cambiar el nombre de los días de la semana a español
@@ -120,7 +133,7 @@
             const endDate = document.getElementById('endDate').value;
             const totalHours = parseInt(document.getElementById('totalHours').value);
 
-            if (!startDate || !endDate || isNaN(totalHours) || totalHours < 4) {
+            if (!startDate || !endDate || isNaN(totalHours) || totalHours < MIN_HORAS) {
                 alert('Por favor, complete todos los campos correctamente.');
                 return;
             }
@@ -170,7 +183,7 @@
                             end: eventEnd,
                             allDay: false
                         });
-                        remainingHours -= 4; // Restar 4 horas
+                        remainingHours -= MIN_HORAS; // Restar 4 horas
                     }
                 }
 
