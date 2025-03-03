@@ -48,6 +48,7 @@
                 },
                 slotMinTime: '07:00:00', // Hora mínima visible
                 slotMaxTime: '22:00:00', // Hora máxima visible (10 PM)
+                allDaySlot: false, // Deshabilitar la opción "Todo el día"
                 events: [], // Eventos se agregarán dinámicamente
                 editable: true, // Permite arrastrar y soltar eventos
                 selectable: true, // Permite seleccionar rangos de tiempo
@@ -86,8 +87,7 @@
                         calendar.addEvent({
                             title: title,
                             start: start,
-                            end: end,
-                            allDay: false
+                            end: end
                         });
                     }
                     calendar.unselect(); // Limpiar la selección
@@ -147,8 +147,7 @@
                     events.push({
                         title: title,
                         start: eventStart.toISOString(),
-                        end: eventEnd.toISOString(),
-                        allDay: false
+                        end: eventEnd.toISOString()
                     });
                 }
                 start.setDate(start.getDate() + 1); // Avanzar un día
@@ -211,8 +210,7 @@
                         window.calendar.addEvent({
                             title: 'Evento autocompletado',
                             start: eventStart,
-                            end: eventEnd,
-                            allDay: false
+                            end: eventEnd
                         });
                         remainingHours -= MIN_HORAS; // Restar 4 horas
                     }
