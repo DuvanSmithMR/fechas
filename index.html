@@ -34,6 +34,8 @@
     <script>
         // Constante global para el mínimo de horas
         const MIN_HORAS = 4;
+        const HORA_INICIO_MINIMA = 7; // 7 AM
+        const HORA_FIN_MAXIMA = 22;   // 10 PM
 
         document.addEventListener('DOMContentLoaded', function () {
             const calendarEl = document.getElementById('calendar');
@@ -67,6 +69,18 @@
                         return;
                     }
 
+                    // Validación: No permitir eventos antes de las 7 AM
+                    if (start.getHours() < HORA_INICIO_MINIMA) {
+                        alert(`No se pueden crear eventos antes de las ${HORA_INICIO_MINIMA} AM.`);
+                        return;
+                    }
+
+                    // Validación: No permitir eventos que terminen después de las 10 PM
+                    if (end.getHours() > HORA_FIN_MAXIMA || (end.getHours() === HORA_FIN_MAXIMA && end.getMinutes() > 0)) {
+                        alert(`No se pueden crear eventos que terminen después de las ${HORA_FIN_MAXIMA} PM.`);
+                        return;
+                    }
+
                     const title = prompt('Ingrese el nombre del evento:');
                     if (title) {
                         calendar.addEvent({
@@ -80,12 +94,29 @@
                 },
                 eventChange: function (info) {
                     const event = info.event;
-                    const duration = (event.end - event.start) / (1000 * 60 * 60); // Duración en horas
+                    const start = event.start;
+                    const end = event.end;
+                    const duration = (end - start) / (1000 * 60 * 60); // Duración en horas
 
                     // Validación: No permitir que un evento tenga menos de 4 horas
                     if (duration < MIN_HORAS) {
                         alert(`No se puede editar el evento para que tenga menos de ${MIN_HORAS} horas.`);
                         info.revert(); // Revertir cambios
+                        return;
+                    }
+
+                    // Validación: No permitir eventos antes de las 7 AM
+                    if (start.getHours() < HORA_INICIO_MINIMA) {
+                        alert(`No se pueden mover eventos antes de las ${HORA_INICIO_MINIMA} AM.`);
+                        info.revert(); // Revertir cambios
+                        return;
+                    }
+
+                    // Validación: No permitir eventos que terminen después de las 10 PM
+                    if (end.getHours() > HORA_FIN_MAXIMA || (end.getHours() === HORA_FIN_MAXIMA && end.getMinutes() > 0)) {
+                        alert(`No se pueden mover eventos que terminen después de las ${HORA_FIN_MAXIMA} PM.`);
+                        info.revert(); // Revertir cambios
+                        return;
                     }
                 },
                 dayHeaderContent: function (arg) {
